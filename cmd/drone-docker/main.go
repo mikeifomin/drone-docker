@@ -8,7 +8,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/urfave/cli"
 
-	"github.com/drone-plugins/drone-docker"
+	"github.com/mikeifomin/drone-docker-service-update"
 )
 
 var build = "0" // build number set at compile-time
@@ -20,7 +20,7 @@ func main() {
 	}
 
 	app := cli.NewApp()
-	app.Name = "docker plugin"
+	app.Name = "docker service update plugin"
 	app.Usage = "docker plugin"
 	app.Action = run
 	app.Version = fmt.Sprintf("1.0.%s", build)
@@ -202,6 +202,12 @@ func main() {
 			Usage:  "repository default branch",
 			EnvVar: "DRONE_REPO_BRANCH",
 		},
+		cli.StringFlag{
+			Name:   "docker.raw",
+			Usage:  "raw args ",
+			EnvVar: "PLUGIN_RAW",
+		},
+
 	}
 
 	if err := app.Run(os.Args); err != nil {
@@ -247,6 +253,9 @@ func run(c *cli.Context) error {
 			DNSSearch:     c.StringSlice("daemon.dns-search"),
 			MTU:           c.String("daemon.mtu"),
 			Experimental:  c.Bool("daemon.experimental"),
+		},
+		Update: docker.Update{
+			Raw:           c.String("docker.raw"),
 		},
 	}
 

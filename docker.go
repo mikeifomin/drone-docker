@@ -50,12 +50,16 @@ type (
 		Repo        string   // Docker build repository
 		LabelSchema []string // Label schema map
 	}
+	Update struct {
+		Raw      string // raw command to docker service update ..
+	}
 
 	// Plugin defines the Docker plugin parameters.
 	Plugin struct {
 		Login   Login  // Docker login configuration
 		Build   Build  // Docker build configuration
 		Daemon  Daemon // Docker daemon configuration
+		Update  Update // service update conf
 		Dryrun  bool   // Docker push is skipped
 		Cleanup bool   // Docker purge is enabled
 	}
@@ -106,27 +110,10 @@ func (p Plugin) Exec() error {
 		p.Build.Squash = false
 	}
 
-	// add proxy build args
-	addProxyBuildArgs(&p.Build)
-
 	var cmds []*exec.Cmd
 	cmds = append(cmds, commandVersion()) // docker version
 	cmds = append(cmds, commandInfo())    // docker info
-
-	cmds = append(cmds, commandBuild(p.Build)) // docker build
-
-	for _, tag := range p.Build.Tags {
-		cmds = append(cmds, commandTag(p.Build, tag)) // docker tag
-
-		if p.Dryrun == false {
-			cmds = append(cmds, commandPush(p.Build, tag)) // docker push
-		}
-	}
-
-	if p.Cleanup {
-		cmds = append(cmds, commandRmi(p.Build.Name)) // docker rmi
-		cmds = append(cmds, commandPrune())           // docker system prune -f
-	}
+	cmds = append(cmds, commandUpdate(p.Update)) 
 
 	// execute all commands in batch mode.
 	for _, cmd := range cmds {
@@ -220,6 +207,16 @@ func commandBuild(build Build) *exec.Cmd {
 	}
 
 	return exec.Command(dockerExe, args...)
+}
+func commandUpdate(upd Update) *exec.Cmd {
+	args := []string{
+		"service",
+		"update",
+	}
+	args = append(args, strings.Split(upd.Raw," ")...)
+
+	return exec.Command(dockerExe,args...)
+
 }
 
 // helper function to add proxy values from the environment

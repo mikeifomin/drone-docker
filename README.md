@@ -1,6 +1,10 @@
-# drone-docker
+# drone-docker-service-update
 
-Drone plugin to build and publish Docker images to a container registry.
+basically rollout your just builded docker image.
+
+```bash
+docker service --image $NEW_IMAGE $SERVICE_NAME 
+```
 
 ## Build
 
