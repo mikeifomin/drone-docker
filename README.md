@@ -1,38 +1,14 @@
-# drone-docker-service-update
+# Better solution. without this plugin:
 
-basically rollout your just builded docker image.
-
-```bash
-docker service --image $NEW_IMAGE $SERVICE_NAME 
+```yaml
+deploy:
+  privileged: true
+  image: docker:17.10.0-dind
+  volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+  commands:
+    - "docker service update --image repo/image:${DRONE_TAG} service_name"
 ```
 
-## Build
+[link](https://discourse.drone.io/t/update-swarm-service-in-publish-pipeline/191/3)
 
-Build the binary with the following commands:
-
-```
-sh .drone.sh
-```
-
-## Docker
-
-Build the Docker image with the following commands:
-
-```
-docker build --rm=true -f docker/Dockerfile -t plugins/docker .
-```
-
-## Usage
-
-Execute from the working directory:
-
-```
-docker run --rm \
-  -e PLUGIN_TAG=latest \
-  -e PLUGIN_REPO=octocat/hello-world \
-  -e DRONE_COMMIT_SHA=d8dbe4d94f15fe89232e0402c6e8a0ddf21af3ab \
-  -v $(pwd):$(pwd) \
-  -w $(pwd) \
-  --privileged \
-  plugins/docker --dry-run
-```
