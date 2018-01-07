@@ -1,0 +1,51 @@
+workspace:
+  base: /go
+  path: src/github.com/drone-plugins/drone-docker
+
+pipeline:
+  build:
+    image: golang:1.9
+    commands:
+      - go get -u github.com/golang/dep/cmd/dep
+      - dep ensure
+      - sh .drone.sh
+
+  publish:
+    image: plugins/docker
+    repo: plugins/docker
+    tags: [ "latest", "17", "17.10" ]
+    secrets: [ docker_username, docker_password ]
+    dockerfile: docker/Dockerfile
+    when:
+      branch: master
+      event: push
+
+  publish_heroku:
+    image: plugins/docker
+    repo: plugins/heroku
+    tags: [ "latest", "17", "17.10" ]
+    secrets: [ docker_username, docker_password ]
+    dockerfile: docker/heroku/Dockerfile
+    when:
+      branch: master
+      event: push
+
+  publish_gcr:
+    image: plugins/docker
+    repo: plugins/gcr
+    tags: [ "latest", "17", "17.10" ]
+    secrets: [ docker_username, docker_password ]
+    dockerfile: docker/gcr/Dockerfile
+    when:
+      branch: master
+      event: push
+
+  publish_ecr:
+    image: plugins/docker
+    repo: plugins/ecr
+    tags: [ "latest", "17", "17.10" ]
+    secrets: [ docker_username, docker_password ]
+    dockerfile: docker/ecr/Dockerfile
+    when:
+      branch: master
+      event: push
